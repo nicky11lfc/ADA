@@ -4,27 +4,50 @@ author: "Tianyi Zhang"
 date: '2022-10-18'
 output: html_document
 ---
+##Import Library
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+library(tidyverse)
+
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+##Read CSV
+```{r}
+titanic <- read_csv("https://raw.githubusercontent.com/kijohnson/Data/main/titanic.csv")
 ```
 
-## Including Plots
+##Medium age
+```{r}
+titanic %>%
+  group_by(Pclass) %>%
+  summarise(median = median(Age))
 
-You can also embed plots, for example:
+```
+##plot
+```{r}
+titanic$Pclass <- factor(titanic$Pclass)
+titanic %>%
+  ggplot(aes(y = Age, x=Pclass))  +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.3, color = "dark green") +
+  labs(y = 'Age in years', x = 'passenger class', title = 'Relationship between Passenger Class and Age')
 
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+##Percentage of gender by class
+
+```{r}
+class_total <- titanic %>%
+  group_by(Pclass)%>%
+  summarize(subn = n())
+class_bysex <- titanic %>%
+  group_by(Pclass,Sex) %>%
+  summarize(n())
+sex_by_class <- left_join(class_total,class_bysex,by = 'Pclass')
+sex_by_class %>%
+  rename(n = 'n()') %>%
+  mutate(percentage = 100 * (n/subn))
+```
+
